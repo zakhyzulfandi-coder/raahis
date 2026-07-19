@@ -131,7 +131,7 @@
     (function () {
       "use strict";
 
-      const WRAPPER_VERSION = "2026.07.19.04-session-haptic-bridge";
+      const WRAPPER_VERSION = "2026.07.19.05-direct-vibration-fallback";
       const SESSION_STORAGE_KEY = "ahis_wrapper_session_v1";
 
       const config = window.AHIS_CONFIG || {};
@@ -283,9 +283,14 @@
       function runVibration(pattern) {
         if (typeof navigator.vibrate !== "function") return false;
 
+        const normalized = normalizeVibratePattern(pattern);
+        const duration = normalized.length ? normalized[0] : 50;
+
         try {
-          return navigator.vibrate(normalizeVibratePattern(pattern)) !== false;
+          /* Mengikuti fungsi pembanding yang berhasil: gunakan angka tunggal. */
+          return navigator.vibrate(duration || 50) !== false;
         } catch (error) {
+          console.warn("Getaran wrapper gagal:", error);
           return false;
         }
       }
@@ -304,12 +309,11 @@
       }
 
       enableHaptic.addEventListener("click", function () {
-        hapticActivated = true;
-
-        const ok = runVibration([45, 35, 45]);
+        const ok = runVibration(50);
         hapticBanner.classList.remove("show");
 
         if (ok) {
+          hapticActivated = true;
           sendHapticReady();
         } else {
           hapticActivated = false;
@@ -358,19 +362,21 @@
             return;
           }
 
-          if (!hapticActivated) {
-            hapticBanner.classList.add("show");
-            sendVibrateResponse(event.source, {
-              requestId: requestId,
-              reason: reason,
-              ok: false,
-              supported: true,
-              needsActivation: true
-            });
-            return;
-          }
+          /*
+           * Tidak lagi menunggu tombol aktivasi. Wrapper langsung mencoba
+           * navigator.vibrate(50), sama seperti HTML pembanding yang berhasil.
+           */
+          const ok = runVibration(data.pattern || 50);
 
-          const ok = runVibration(data.pattern || [100, 70, 100]);
+          if (ok) {
+            hapticActivated = true;
+            hapticBanner.classList.remove("show");
+          } else {
+            hapticActivated = false;
+            hapticBanner.querySelector("span").textContent =
+              "Getaran tidak berhasil. Pastikan mode getar perangkat aktif.";
+            hapticBanner.classList.add("show");
+          }
 
           sendVibrateResponse(event.source, {
             requestId: requestId,
