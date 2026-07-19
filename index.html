@@ -1,38 +1,25 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-  />
-  <meta name="theme-color" content="#f97316" />
-  <meta name="description" content="SISFO AHIS - PWA Web App" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="transparent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="SISFO AHIS">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>SISFO AHIS</title>
 
-  <!-- Default mobile portrait. Tablet/laptop otomatis memakai manifest orientation:any. -->
-  <link id="appManifest" rel="manifest" href="./manifest-mobile.webmanifest" />
-  <script>
-    (function () {
-      var isTabletOrDesktop = Math.min(screen.width || innerWidth, screen.height || innerHeight) >= 768;
-      if (isTabletOrDesktop) {
-        document.getElementById("appManifest").setAttribute("href", "./manifest.webmanifest");
-      }
-    })();
-  </script>
-
-  <link rel="apple-touch-icon" href="https://zakhyzulfandi-coder.github.io/abuhurairah/icons/icon-192.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="https://zakhyzulfandi-coder.github.io/abuhurairah/icons/icon-192.png" />
-  <link rel="icon" type="image/png" sizes="512x512" href="https://zakhyzulfandi-coder.github.io/abuhurairah/icons/icon-192.png" />
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
 
   <style>
     :root {
-      --brand: #f97316;
-      --brand-2: #fb923c;
-      --ink: #0f172a;
+      --text: #111827;
       --muted: #64748b;
-      --line: #e2e8f0;
-      --shadow: 0 18px 45px rgba(15, 23, 42, .12);
+      --gold: #c79a2d;
+      --safe-bottom: env(safe-area-inset-bottom);
     }
 
     * {
@@ -45,131 +32,35 @@
       width: 100%;
       height: 100%;
       margin: 0;
-      padding: 0;
       overflow: hidden;
-      background: #ffffff;
+      background: transparent !important;
       font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--ink);
-      overscroll-behavior: none;
+      color: var(--text);
       touch-action: manipulation;
     }
 
-    /*
-      FIX SISI ATAS / BAWAH TEBAL:
-      Padding safe-area dihapus dari wrapper.
-      Sebelumnya env(safe-area-inset-top/bottom) membuat area atas dan bawah terlihat terlalu tebal.
-    */
-    .app-shell {
+    body {
+      position: fixed;
+      inset: 0;
+      overscroll-behavior: none;
+    }
+
+    #appFrame {
       position: fixed;
       inset: 0;
       width: 100vw;
       height: 100dvh;
-      overflow: hidden;
-      background: #ffffff;
-      padding: 0;
-      margin: 0;
-    }
-
-    .app-frame {
-      width: 100%;
-      height: 100%;
-      min-height: 100dvh;
       border: 0;
       display: block;
-      background: #ffffff;
-      padding: 0;
-      margin: 0;
+      background: transparent !important;
     }
 
-    .splash {
+    .status-banner {
       position: fixed;
-      inset: 0;
-      z-index: 50;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background:
-        radial-gradient(circle at top left, rgba(249, 115, 22, .18), transparent 36%),
-        linear-gradient(180deg, #fff7ed 0%, #f8fafc 100%);
-      transition: opacity .35s ease, visibility .35s ease;
-    }
-
-    .splash.hide {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    .splash-card {
-      width: min(420px, 94vw);
-      padding: 28px 24px;
-      border-radius: 28px;
-      background: rgba(255, 255, 255, .9);
-      border: 1px solid rgba(226, 232, 240, .88);
-      box-shadow: var(--shadow);
-      text-align: center;
-      backdrop-filter: blur(16px);
-    }
-
-    .logo-box {
-      width: 82px;
-      height: 82px;
-      border-radius: 26px;
-      margin: 0 auto 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px;
-      background: rgba(255, 255, 255, .96);
-      border: 1px solid rgba(254, 215, 170, .95);
-      box-shadow: 0 18px 34px rgba(249, 115, 22, .20);
-      overflow: hidden;
-    }
-
-    .logo-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-    }
-
-    .splash-title {
-      margin: 0;
-      font-size: 1.35rem;
-      font-weight: 900;
-      letter-spacing: -.02em;
-    }
-
-    .splash-sub {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: .92rem;
-      font-weight: 650;
-      line-height: 1.45;
-    }
-
-    .loader {
-      width: 42px;
-      height: 42px;
-      border-radius: 999px;
-      border: 4px solid #fed7aa;
-      border-top-color: var(--brand);
-      animation: spin .8s linear infinite;
-      margin: 22px auto 0;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .top-alert {
-      position: fixed;
-      left: 50%;
-      top: 14px;
-      transform: translateX(-50%);
-      z-index: 80;
-      width: min(620px, calc(100vw - 24px));
+      left: 12px;
+      right: 12px;
+      bottom: calc(12px + var(--safe-bottom));
+      z-index: 70;
       display: none;
       align-items: center;
       justify-content: space-between;
@@ -177,1180 +68,116 @@
       padding: 12px 14px;
       border-radius: 18px;
       background: rgba(15, 23, 42, .94);
-      color: #ffffff;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(16px);
-      font-size: .9rem;
-      font-weight: 700;
+      color: white;
+      box-shadow: 0 16px 44px rgba(0,0,0,.26);
+      font-size: 13px;
+      line-height: 1.35;
     }
 
-    .top-alert.show {
+    .status-banner.show {
       display: flex;
     }
 
-    .top-alert button {
+    .status-banner button {
       border: 0;
-      border-radius: 12px;
+      border-radius: 999px;
       padding: 8px 12px;
-      background: var(--brand);
-      color: #ffffff;
-      font-weight: 900;
+      font-weight: 800;
+      background: white;
+      color: #0f172a;
       cursor: pointer;
       white-space: nowrap;
     }
-
-    .install-box,
-    .permission-box {
-      position: fixed;
-      z-index: 70;
-      display: none;
-      max-width: min(390px, calc(100vw - 28px));
-      padding: 14px;
-      border-radius: 22px;
-      background: rgba(255, 255, 255, .94);
-      border: 1px solid rgba(226, 232, 240, .9);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(16px);
-    }
-
-    .install-box {
-      right: 14px;
-      bottom: 14px;
-    }
-
-    .permission-box {
-      left: 14px;
-      bottom: 14px;
-    }
-
-    .install-box.show,
-    .permission-box.show {
-      display: block;
-    }
-
-    .box-title {
-      margin: 0 0 4px;
-      font-size: .98rem;
-      font-weight: 900;
-    }
-
-    .box-text {
-      margin: 0 0 12px;
-      color: var(--muted);
-      font-size: .84rem;
-      font-weight: 650;
-      line-height: 1.45;
-    }
-
-    .box-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .box-actions button {
-      border: 0;
-      border-radius: 13px;
-      padding: 9px 12px;
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--brand), var(--brand-2));
-      color: #ffffff;
-      flex: 1;
-    }
-
-    .btn-light {
-      background: #f1f5f9;
-      color: var(--ink);
-    }
-
-    .rotate-blocker {
-      position: fixed;
-      inset: 0;
-      z-index: 999;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background:
-        radial-gradient(circle at top left, rgba(249, 115, 22, .18), transparent 36%),
-        linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
-      text-align: center;
-    }
-
-    .rotate-card {
-      width: min(420px, 92vw);
-      padding: 26px 22px;
-      border-radius: 28px;
-      background: rgba(255,255,255,.94);
-      border: 1px solid #fed7aa;
-      box-shadow: var(--shadow);
-    }
-
-    .rotate-icon {
-      width: 70px;
-      height: 70px;
-      border-radius: 24px;
-      margin: 0 auto 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, var(--brand), #ffb84d);
-      color: #fff;
-      font-size: 30px;
-      font-weight: 900;
-    }
-
-    .rotate-card h2 {
-      margin: 0;
-      font-size: 1.15rem;
-      font-weight: 950;
-      color: var(--ink);
-    }
-
-    .rotate-card p {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-weight: 700;
-      line-height: 1.5;
-      font-size: .9rem;
-    }
-
-    /*
-      MOBILE DIPATENKAN PORTRAIT:
-      Jika browser tetap memaksa landscape, isi aplikasi disembunyikan
-      dan tampil instruksi untuk kembali portrait.
-    */
-    @media (max-width: 767px) and (orientation: landscape) {
-      .rotate-blocker {
-        display: flex;
-      }
-
-      .app-shell,
-      .install-box,
-      .permission-box,
-      .top-alert,
-      .splash {
-        display: none !important;
-      }
-    }
-
-    @media (display-mode: standalone) {
-      .install-box {
-        display: none !important;
-      }
-    }
-
-    @media (max-width: 720px) {
-      .permission-box,
-      .install-box {
-        left: 12px;
-        right: 12px;
-        bottom: 12px;
-        max-width: none;
-      }
-    }
-    /* ===== POPUP UPDATE PWA 5 DETIK ===== */
-    .pwa-update-modal {
-      position: fixed;
-      inset: 0;
-      z-index: 2000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 22px;
-      background: rgba(15, 23, 42, .52);
-      backdrop-filter: blur(12px);
-    }
-
-    .pwa-update-modal.show {
-      display: flex;
-      animation: pwaFadeIn .18s ease-out;
-    }
-
-    @keyframes pwaFadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    .pwa-update-card {
-      width: min(430px, 94vw);
-      border-radius: 28px;
-      overflow: hidden;
-      background: rgba(255, 255, 255, .96);
-      border: 1px solid rgba(254, 215, 170, .92);
-      box-shadow: 0 30px 80px rgba(15, 23, 42, .28);
-    }
-
-    .pwa-update-head {
-      padding: 22px 22px 16px;
-      background:
-        radial-gradient(circle at top right, rgba(249, 115, 22, .18), transparent 36%),
-        linear-gradient(135deg, #fff7ed, #ffffff);
-      text-align: center;
-    }
-
-    .pwa-update-icon {
-      width: 70px;
-      height: 70px;
-      border-radius: 24px;
-      margin: 0 auto 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #f97316, #ffb84d);
-      color: #ffffff;
-      font-size: 28px;
-      font-weight: 900;
-      box-shadow: 0 18px 34px rgba(249, 115, 22, .26);
-    }
-
-    .pwa-update-title {
-      margin: 0;
-      font-size: 1.22rem;
-      font-weight: 950;
-      color: #0f172a;
-      letter-spacing: -.02em;
-    }
-
-    .pwa-update-subtitle {
-      margin: 8px auto 0;
-      color: #64748b;
-      font-size: .9rem;
-      font-weight: 700;
-      line-height: 1.5;
-      max-width: 330px;
-    }
-
-    .pwa-update-body {
-      padding: 18px 22px 22px;
-    }
-
-    .pwa-progress-wrap {
-      display: none;
-      margin-bottom: 16px;
-    }
-
-    .pwa-progress-wrap.show {
-      display: block;
-    }
-
-    .pwa-progress-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 8px;
-      color: #334155;
-      font-size: .82rem;
-      font-weight: 900;
-    }
-
-    .pwa-progress-track {
-      width: 100%;
-      height: 12px;
-      overflow: hidden;
-      border-radius: 999px;
-      background: #ffedd5;
-      border: 1px solid #fed7aa;
-    }
-
-    .pwa-progress-bar {
-      width: 0%;
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, #f97316, #ffb84d);
-      box-shadow: 0 0 18px rgba(249, 115, 22, .35);
-      transition: width .16s linear;
-    }
-
-    .pwa-update-status {
-      min-height: 20px;
-      color: #64748b;
-      font-size: .82rem;
-      font-weight: 750;
-      margin-top: 9px;
-      line-height: 1.4;
-    }
-
-    .pwa-update-actions {
-      display: flex;
-      gap: 10px;
-    }
-
-    .pwa-update-actions button {
-      border: 0;
-      border-radius: 15px;
-      padding: 12px 14px;
-      font-weight: 950;
-      cursor: pointer;
-      min-height: 46px;
-    }
-
-    .pwa-update-primary {
-      flex: 1;
-      color: #ffffff;
-      background: linear-gradient(135deg, #f97316, #fb923c);
-      box-shadow: 0 14px 28px rgba(249, 115, 22, .22);
-    }
-
-    .pwa-update-secondary {
-      color: #334155;
-      background: #f1f5f9;
-    }
-
-    .pwa-update-primary:disabled,
-    .pwa-update-secondary:disabled {
-      opacity: .72;
-      cursor: not-allowed;
-    }
-
-    @media (max-width: 520px) {
-      .pwa-update-actions {
-        flex-direction: column;
-      }
-
-      .pwa-update-secondary,
-      .pwa-update-primary {
-        width: 100%;
-      }
-    }
-
-
-  
-    /* ===== OFFLINE SCREEN CUSTOM SISFO AHIS ===== */
-    .offline-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background:
-        radial-gradient(circle at top left, rgba(249, 115, 22, .22), transparent 34%),
-        radial-gradient(circle at bottom right, rgba(251, 191, 36, .16), transparent 36%),
-        linear-gradient(180deg, #fff7ed 0%, #f8fafc 100%);
-      color: #0f172a;
-    }
-
-    .offline-screen.show {
-      display: flex;
-    }
-
-    .offline-card {
-      width: min(430px, 94vw);
-      border-radius: 30px;
-      border: 1px solid rgba(254, 215, 170, .95);
-      background: rgba(255, 255, 255, .92);
-      box-shadow: 0 26px 70px rgba(15, 23, 42, .16);
-      padding: 28px 24px;
-      text-align: center;
-      backdrop-filter: blur(18px);
-    }
-
-    .offline-logo {
-      width: 78px;
-      height: 78px;
-      border-radius: 25px;
-      display: grid;
-      place-items: center;
-      margin: 0 auto 14px;
-      padding: 8px;
-      background: #ffffff;
-      border: 1px solid #fed7aa;
-      box-shadow: 0 18px 34px rgba(249, 115, 22, .18);
-      overflow: hidden;
-    }
-
-    .offline-logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-
-    .offline-icon {
-      width: 50px;
-      height: 50px;
-      border-radius: 18px;
-      display: grid;
-      place-items: center;
-      margin: 0 auto 14px;
-      background: linear-gradient(135deg, #f97316, #facc15);
-      color: #111827;
-      font-size: 1.35rem;
-      box-shadow: 0 14px 30px rgba(249, 115, 22, .24);
-    }
-
-    .offline-title {
-      margin: 0;
-      font-size: 1.45rem;
-      line-height: 1.18;
-      font-weight: 950;
-      letter-spacing: -.03em;
-    }
-
-    .offline-text {
-      margin: 10px 0 16px;
-      color: #64748b;
-      font-size: .95rem;
-      font-weight: 700;
-      line-height: 1.55;
-    }
-
-    .offline-status {
-      border: 1px solid #fed7aa;
-      border-radius: 18px;
-      background: #fff7ed;
-      padding: 11px 12px;
-      color: #9a3412;
-      font-size: .82rem;
-      font-weight: 850;
-      line-height: 1.45;
-      margin-bottom: 14px;
-    }
-
-    .offline-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 999px;
-      display: inline-block;
-      margin-right: 7px;
-      background: #ef4444;
-      box-shadow: 0 0 0 6px rgba(239, 68, 68, .12);
-      vertical-align: middle;
-    }
-
-    .offline-dot.online {
-      background: #22c55e;
-      box-shadow: 0 0 0 6px rgba(34, 197, 94, .12);
-    }
-
-    .offline-actions {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .offline-btn {
-      border: 0;
-      border-radius: 15px;
-      padding: 12px 15px;
-      font-weight: 950;
-      cursor: pointer;
-      transition: .16s ease;
-    }
-
-    .offline-btn-primary {
-      color: #111827;
-      background: linear-gradient(135deg, #f97316, #facc15);
-      box-shadow: 0 12px 26px rgba(249, 115, 22, .22);
-    }
-
-    .offline-btn-light {
-      color: #334155;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-    }
-
-    .offline-small {
-      margin-top: 13px;
-      color: #94a3b8;
-      font-size: .76rem;
-      font-weight: 800;
-    }
-
-    @media (max-width: 520px) {
-      .offline-card {
-        padding: 24px 20px;
-        border-radius: 26px;
-      }
-
-      .offline-actions {
-        display: grid;
-        grid-template-columns: 1fr;
-      }
-
-      .offline-btn {
-        width: 100%;
-      }
-    }
-
   </style>
 </head>
 
 <body>
-  <div class="app-shell">
-    <iframe
-      id="appFrame"
-      class="app-frame"
-      title="SISFO AHIS"
-      data-src="https://script.google.com/a/~/macros/s/AKfycbwRgtuB4bVqnMH22kZAMgLzdU20dcrYUaP6CMfiS2emUQkhZjWJ5HouJ2pPcP6tu8Gx/exec"
-      src="about:blank"
-      allow="geolocation; camera; microphone; gyroscope; accelerometer; magnetometer; clipboard-read; clipboard-write; fullscreen; web-share"
-      allowfullscreen
-      referrerpolicy="strict-origin-when-cross-origin">
-    </iframe>
+  <iframe
+    id="appFrame"
+    title="SISFO AHIS"
+    allow="geolocation; camera; microphone; gyroscope; accelerometer; magnetometer; clipboard-read; clipboard-write; fullscreen; web-share"
+    referrerpolicy="no-referrer-when-downgrade">
+  </iframe>
+
+  <div class="status-banner" id="offlineBanner">
+    <span>Perangkat sedang offline. Beberapa fitur mungkin belum dapat dipakai.</span>
+    <button type="button" onclick="location.reload()">Muat ulang</button>
   </div>
 
-  <div class="splash" id="splash">
-    <div class="splash-card">
-      <div class="logo-box"><img src="https://zakhyzulfandi-coder.github.io/abuhurairah/icons/icon-192.png" alt="Logo MTs Abu Hurairah"></div>
-      <h1 class="splash-title">SISFO AHIS</h1>
-      <p class="splash-sub">Memuat aplikasi. Pastikan koneksi internet aktif.</p>
-      <div class="loader"></div>
-    </div>
+  <div class="status-banner" id="updateBanner">
+    <span>Update aplikasi tersedia. Muat ulang untuk memakai versi terbaru.</span>
+    <button type="button" id="reloadUpdate">Update</button>
   </div>
 
-  <div class="rotate-blocker" id="rotateBlocker">
-    <div class="rotate-card">
-      <div class="rotate-icon">↻</div>
-      <h2>Gunakan Mode Portrait</h2>
-      <p>Pada HP, SISFO AHIS dikunci dalam mode portrait agar tampilan lebih rapi. Silakan putar kembali perangkat Anda.</p>
-    </div>
-  </div>
-
-  <div class="top-alert" id="offlineAlert">
-    <span>Anda sedang offline. Aplikasi membutuhkan internet untuk membuka data.</span>
-    <button type="button" onclick="location.reload()">Muat Ulang</button>
-  </div>
-
-  <div class="top-alert" id="updateAlert">
-    <span>Versi aplikasi terbaru tersedia.</span>
-    <button type="button" id="btnApplyUpdate">Update</button>
-  </div>
-
-
-  <div class="offline-screen" id="offlineScreen" aria-live="polite">
-    <div class="offline-card">
-      <div class="offline-logo">
-        <img src="https://zakhyzulfandi-coder.github.io/abuhurairah/icons/icon-192.png" alt="Logo MTs Abu Hurairah" />
-      </div>
-      <div class="offline-icon">⚡</div>
-      <h1 class="offline-title">Anda Sedang Offline</h1>
-      <p class="offline-text">
-        SISFO AHIS membutuhkan internet untuk membuka data dari Google Apps Script dan Spreadsheet.
-      </p>
-      <div class="offline-status" id="offlineStatusText">
-        <span class="offline-dot"></span>
-        Tetap standby. Sistem akan membuka kembali otomatis setelah internet tersambung.
-      </div>
-      <div class="offline-actions">
-        <button class="offline-btn offline-btn-primary" type="button" onclick="offlineTryReload()">Coba Muat Ulang</button>
-        <button class="offline-btn offline-btn-light" type="button" onclick="offlineCheckNow()">Cek Koneksi</button>
-      </div>
-      <div class="offline-small" id="offlineLastCheck">Menunggu koneksi internet...</div>
-    </div>
-  </div>
-
-  <div class="install-box" id="installBox">
-    <p class="box-title">Install SISFO AHIS</p>
-    <p class="box-text">Tambahkan aplikasi ke layar utama agar lebih cepat dibuka seperti aplikasi biasa.</p>
-    <div class="box-actions">
-      <button type="button" class="btn-primary" id="btnInstall">Install</button>
-      <button type="button" class="btn-light" id="btnCloseInstall">Nanti</button>
-    </div>
-  </div>
-
-  <div class="permission-box" id="permissionBox">
-    <p class="box-title">Izin Aplikasi</p>
-    <p class="box-text">Aktifkan izin lokasi dan notifikasi agar fitur absensi berjalan lebih lancar.</p>
-    <div class="box-actions">
-      <button type="button" class="btn-primary" id="btnRequestPermissions">Aktifkan Izin</button>
-      <button type="button" class="btn-light" id="btnClosePermission">Tutup</button>
-    </div>
-  </div>
-
+  <script src="config.js"></script>
   <script>
-    const APP_VERSION = "2026.07.19.02-session-bridge";
-    const frame = document.getElementById("appFrame");
-    const APP_TARGET_URL = frame ? (frame.getAttribute("data-src") || frame.getAttribute("src") || "") : "";
-    const splash = document.getElementById("splash");
-    const offlineAlert = document.getElementById("offlineAlert");
-    const offlineScreen = document.getElementById("offlineScreen");
-    const offlineStatusText = document.getElementById("offlineStatusText");
-    const offlineLastCheck = document.getElementById("offlineLastCheck");
-    let offlineEverDetected = !navigator.onLine;
-    let offlineReloadScheduled = false;
-    const updateAlert = document.getElementById("updateAlert");
-    const installBox = document.getElementById("installBox");
-    const permissionBox = document.getElementById("permissionBox");
+    (function () {
+      const config = window.AHIS_CONFIG || {};
+      const appUrl = config.APP_URL || "";
 
-    const btnInstall = document.getElementById("btnInstall");
-    const btnCloseInstall = document.getElementById("btnCloseInstall");
-    const btnApplyUpdate = document.getElementById("btnApplyUpdate");
-    const btnRequestPermissions = document.getElementById("btnRequestPermissions");
-    const btnClosePermission = document.getElementById("btnClosePermission");
+      const frame = document.getElementById("appFrame");
+      const offlineBanner = document.getElementById("offlineBanner");
+      const updateBanner = document.getElementById("updateBanner");
+      const reloadUpdate = document.getElementById("reloadUpdate");
 
+      document.title = config.APP_NAME || "SISFO AHIS";
 
-
-    /*******************************************************
-     * SESSION BRIDGE PERMANEN
-     * Menyimpan sesi Apps Script pada origin GitHub/Vercel (halaman utama),
-     * sehingga sesi tetap tersedia walaupun localStorage iframe Apps Script
-     * tidak terbaca setelah Android WebView benar-benar dihentikan.
-     *******************************************************/
-    const AHIS_WRAPPER_SESSION_KEY = 'ahis_wrapper_session_v1';
-
-    function wrapperSessionRead() {
-      try {
-        const raw = localStorage.getItem(AHIS_WRAPPER_SESSION_KEY);
-        if (!raw) return null;
-
-        const data = JSON.parse(raw);
-        if (!data || !data.user || !String(data.user.user || '').trim()) {
-          return null;
-        }
-
-        return data;
-      } catch (err) {
-        console.warn('Sesi wrapper tidak dapat dibaca:', err);
-        return null;
-      }
-    }
-
-    function wrapperSessionSave(sessionData) {
-      if (!sessionData || !sessionData.user || !String(sessionData.user.user || '').trim()) {
-        return false;
+      function loadApp() {
+        const separator = appUrl.includes("?") ? "&" : "?";
+        frame.src = appUrl + separator + "wrapper=github&t=" + Date.now();
       }
 
-      try {
-        localStorage.setItem(
-          AHIS_WRAPPER_SESSION_KEY,
-          JSON.stringify(Object.assign({}, sessionData, {
-            persistent: true,
-            wrapperSavedAt: Date.now()
-          }))
-        );
-        return true;
-      } catch (err) {
-        console.warn('Sesi wrapper tidak dapat disimpan:', err);
-        return false;
-      }
-    }
-
-    function wrapperSessionClear() {
-      try {
-        localStorage.removeItem(AHIS_WRAPPER_SESSION_KEY);
-      } catch (err) {}
-    }
-
-    function wrapperSessionReply(targetWindow, requestId, sessionData) {
-      try {
-        if (!targetWindow) return;
-        targetWindow.postMessage({
-          type: 'AHIS_SESSION_RESPONSE',
-          requestId: requestId || '',
-          sessionData: sessionData || null,
-          sentAt: Date.now()
-        }, '*');
-      } catch (err) {
-        console.warn('Jawaban session bridge gagal dikirim:', err);
-      }
-    }
-
-    window.addEventListener('message', function(event) {
-      const data = event.data || {};
-      if (!data || [
-        'AHIS_SESSION_GET',
-        'AHIS_SESSION_SAVE',
-        'AHIS_SESSION_CLEAR'
-      ].indexOf(data.type) === -1) {
-        return;
+      function updateOnlineStatus() {
+        offlineBanner.classList.toggle("show", !navigator.onLine);
       }
 
-      /* Hanya iframe Apps Script aktif yang boleh mengakses sesi wrapper. */
-      if (!frame || event.source !== frame.contentWindow) return;
-
-      if (data.type === 'AHIS_SESSION_SAVE') {
-        wrapperSessionSave(data.sessionData);
-        return;
-      }
-
-      if (data.type === 'AHIS_SESSION_CLEAR') {
-        wrapperSessionClear();
-        return;
-      }
-
-      if (data.type === 'AHIS_SESSION_GET') {
-        wrapperSessionReply(event.source, data.requestId, wrapperSessionRead());
-      }
-    });
-
-    let deferredPrompt = null;
-    let newWorkerWaiting = null;
-    let splashTimer = null;
-
-    function isMobilePortraitLocked() {
-      return Math.min(window.innerWidth, window.innerHeight) < 768;
-    }
-
-    async function applyOrientationPolicy() {
-      try {
-        if (screen.orientation && screen.orientation.lock) {
-          if (isMobilePortraitLocked()) {
-            await screen.orientation.lock("portrait-primary");
-          } else {
-            if (screen.orientation.unlock) screen.orientation.unlock();
-          }
-        }
-      } catch (err) {
-        // Sebagian browser hanya mengizinkan lock setelah PWA di-install.
-        // Fallback CSS tetap menjaga mobile agar tidak menampilkan layout landscape.
-      }
-    }
-
-    function hideSplash() {
-      clearTimeout(splashTimer);
-      splash.classList.add("hide");
-    }
-
-    function offlineSetFrameBlank() {
-      if (!frame) return;
-      try {
-        frame.style.visibility = "hidden";
-        if (frame.getAttribute("src") !== "about:blank") {
-          frame.setAttribute("src", "about:blank");
-        }
-      } catch (err) {}
-    }
-
-    function offlineLoadFrameIfOnline() {
-      if (!frame || !navigator.onLine) return;
-      try {
-        if (!frame.getAttribute("src") || frame.getAttribute("src") === "about:blank") {
-          frame.setAttribute("src", APP_TARGET_URL);
-        }
-        frame.style.visibility = "visible";
-      } catch (err) {}
-    }
-
-    function offlineShowPage() {
-      offlineEverDetected = true;
-      offlineReloadScheduled = false;
-      if (offlineAlert) offlineAlert.classList.add("show");
-      if (offlineScreen) offlineScreen.classList.add("show");
-      if (offlineStatusText) {
-        offlineStatusText.innerHTML = '<span class="offline-dot"></span>Tetap standby. Sistem akan membuka kembali otomatis setelah internet tersambung.';
-      }
-      if (offlineLastCheck) offlineLastCheck.textContent = "Status: offline • " + new Date().toLocaleTimeString("id-ID");
-      offlineSetFrameBlank();
-      hideSplash();
-    }
-
-    function offlineHidePageAndReload() {
-      if (offlineStatusText) {
-        offlineStatusText.innerHTML = '<span class="offline-dot online"></span>Koneksi kembali online. Aplikasi sedang dimuat ulang otomatis...';
-      }
-      if (offlineLastCheck) offlineLastCheck.textContent = "Status: online • memuat ulang...";
-      if (offlineReloadScheduled) return;
-      offlineReloadScheduled = true;
-
-      setTimeout(function () {
-        location.reload();
-      }, 650);
-    }
-
-    function offlineTryReload() {
-      if (navigator.onLine) {
-        offlineHidePageAndReload();
-      } else {
-        offlineShowPage();
-      }
-    }
-
-    function offlineCheckNow() {
-      if (navigator.onLine) {
-        offlineHidePageAndReload();
-      } else {
-        if (offlineLastCheck) offlineLastCheck.textContent = "Masih offline • " + new Date().toLocaleTimeString("id-ID");
-      }
-    }
-
-    function updateOnlineStatus() {
-      const online = navigator.onLine;
-
-      if (offlineAlert) offlineAlert.classList.toggle("show", !online);
-
-      if (!online) {
-        offlineShowPage();
-        return;
-      }
-
-      if (offlineEverDetected) {
-        offlineHidePageAndReload();
-        return;
-      }
-
-      if (offlineScreen) offlineScreen.classList.remove("show");
-      offlineLoadFrameIfOnline();
-    }
-
-    function requestGeolocationPermission() {
-      return new Promise(function (resolve) {
-        if (!navigator.geolocation) {
-          resolve(false);
-          return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-          function () { resolve(true); },
-          function () { resolve(false); },
-          {
-            enableHighAccuracy: true,
-            timeout: 12000,
-            maximumAge: 0
-          }
-        );
-      });
-    }
-
-    async function requestNotificationPermission() {
-      if (!("Notification" in window)) return false;
-      try {
-        const result = await Notification.requestPermission();
-        return result === "granted";
-      } catch (err) {
-        return false;
-      }
-    }
-
-    async function requestAllPermissions() {
-      btnRequestPermissions.disabled = true;
-      btnRequestPermissions.textContent = "Meminta izin...";
-      await requestGeolocationPermission();
-      await requestNotificationPermission();
-      localStorage.setItem("pwa_permissions_checked_at", String(Date.now()));
-      btnRequestPermissions.disabled = false;
-      btnRequestPermissions.textContent = "Aktifkan Izin";
-      permissionBox.classList.remove("show");
-    }
-
-    function shouldShowPermissionBox() {
-      const dismissedAt = Number(localStorage.getItem("pwa_permission_dismissed_at") || 0);
-      const checkedAt = Number(localStorage.getItem("pwa_permissions_checked_at") || 0);
-      const oneDay = 24 * 60 * 60 * 1000;
-      return Date.now() - dismissedAt > oneDay && Date.now() - checkedAt > oneDay;
-    }
-
-
-    /*******************************************************
-     * GITHUB GPS BRIDGE - TANPA GATE AWAL
-     * GitHub/Vercel hanya menjadi jembatan GPS saat Apps Script meminta lokasi.
-     *******************************************************/
-    const GPS_BRIDGE_CONFIG = {
-      source: "github_wrapper_v1",
-      sampleCount: 3,
-      sampleDurationMs: 6000,
-      maxAccuracyMeter: 80,
-      staticToleranceMeter: 0.3,
-      minSpreadMeter: 0.7,
-      expectedCountryCode: "ID",
-      blockVpnProxy: true,
-      blockIfIpCheckFails: false,
-      vpnKeywords: ["vpn","proxy","tor","hosting","host","cloud","datacenter","digitalocean","amazon","aws","google cloud","microsoft","azure","oracle","ovh","hetzner","linode","vultr","contabo","alibaba"]
-    };
-    function gpsBridgePost(targetWindow, requestId, payload){ try{ targetWindow && targetWindow.postMessage(Object.assign({type:"AHIS_GPS_BRIDGE_RESPONSE",requestId:requestId},payload),"*"); }catch(e){ console.warn(e); } }
-    function gpsBridgeProgress(targetWindow, requestId, message){ gpsBridgePost(targetWindow,requestId,{status:"progress",message:message}); }
-    function gpsBridgeSleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
-    function gpsBridgeGetPosition(){ return new Promise(function(resolve,reject){ if(!navigator.geolocation){ reject(new Error("Browser tidak mendukung GPS/geolocation.")); return; } navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:true,timeout:20000,maximumAge:0}); }); }
-    function gpsBridgeHaversine(lat1,lon1,lat2,lon2){ const R=6371000,toRad=v=>Number(v)*Math.PI/180,dLat=toRad(lat2-lat1),dLon=toRad(lon2-lon1); const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2; return R*(2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))); }
-    function gpsBridgeAnalyzeSamples(samples,cfg){ cfg=Object.assign({},GPS_BRIDGE_CONFIG,cfg||{}); samples=Array.isArray(samples)?samples:[]; if(samples.length<cfg.sampleCount) return {ok:false,abnormal:true,reason:"Sampel GPS tidak lengkap."}; let maxSpread=0,maxAccuracy=0; const coord7=new Set(),coord6=new Set(),accSet=new Set(); samples.forEach((s,i)=>{ const lat=Number(s.latitude),lon=Number(s.longitude),acc=Number(s.accuracy); if(Number.isNaN(lat)||Number.isNaN(lon)) throw new Error("Sampel GPS ke-"+(i+1)+" tidak valid."); if(!acc||Number.isNaN(acc)) throw new Error("Akurasi GPS tidak terbaca. Ini termasuk sinyal GPS tidak normal."); maxAccuracy=Math.max(maxAccuracy,acc); coord7.add(lat.toFixed(7)+","+lon.toFixed(7)); coord6.add(lat.toFixed(6)+","+lon.toFixed(6)); accSet.add(String(Math.round(acc*10)/10)); }); for(let i=0;i<samples.length;i++){ for(let j=i+1;j<samples.length;j++){ maxSpread=Math.max(maxSpread,gpsBridgeHaversine(samples[i].latitude,samples[i].longitude,samples[j].latitude,samples[j].longitude)); } } if(maxAccuracy>cfg.maxAccuracyMeter) return {ok:false,abnormal:true,spread:maxSpread,maxAccuracy:maxAccuracy,reason:"Sinyal GPS tidak normal. Akurasi terlalu rendah ("+Math.round(maxAccuracy)+" meter)."}; if(coord7.size<=1) return {ok:false,abnormal:true,spread:maxSpread,maxAccuracy:maxAccuracy,reason:"Sinyal GPS tidak normal. Semua sampel koordinat identik. Terdeteksi indikasi aplikasi lokasi palsu."}; if(maxSpread<=cfg.staticToleranceMeter) return {ok:false,abnormal:true,spread:maxSpread,maxAccuracy:maxAccuracy,reason:"Sinyal GPS terlalu statis ("+maxSpread.toFixed(2)+" meter). Terdeteksi indikasi aplikasi GPS palsu."}; if(coord6.size<=1 && maxSpread<cfg.minSpreadMeter && accSet.size<=1) return {ok:false,abnormal:true,spread:maxSpread,maxAccuracy:maxAccuracy,reason:"Pola GPS terlalu sempurna dan tidak wajar. Matikan aplikasi lokasi palsu lalu coba lagi."}; if(navigator.webdriver) return {ok:false,abnormal:true,spread:maxSpread,maxAccuracy:maxAccuracy,reason:"Browser automation terdeteksi."}; return {ok:true,abnormal:false,spread:maxSpread,maxAccuracy:maxAccuracy,unique7:coord7.size,unique6:coord6.size}; }
-    async function gpsBridgeTakeSamples(targetWindow,requestId,config){ const cfg=Object.assign({},GPS_BRIDGE_CONFIG,config||{}),samples=[],count=Math.max(1,Number(cfg.sampleCount||GPS_BRIDGE_CONFIG.sampleCount)),duration=Math.max(0,Number(cfg.sampleDurationMs||GPS_BRIDGE_CONFIG.sampleDurationMs)),gap=count>1?Math.ceil(duration/(count-1)):0; for(let i=0;i<count;i++){ gpsBridgeProgress(targetWindow,requestId,"Mengambil sinyal GPS real-time "+(i+1)+"/"+count+"..."); const pos=await gpsBridgeGetPosition(); samples.push({latitude:pos.coords.latitude,longitude:pos.coords.longitude,accuracy:pos.coords.accuracy,altitude:pos.coords.altitude,altitudeAccuracy:pos.coords.altitudeAccuracy,heading:pos.coords.heading,speed:pos.coords.speed,timestamp:new Date().toISOString(),source:GPS_BRIDGE_CONFIG.source}); if(i<count-1) await gpsBridgeSleep(gap); } return samples; }
-    async function gpsBridgeFetchJson(url,timeoutMs){ const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),timeoutMs||7500); try{ const res=await fetch(url,{method:"GET",cache:"no-store",signal:controller.signal}); if(!res.ok) throw new Error("HTTP "+res.status); return await res.json(); }finally{ clearTimeout(timer); } }
-    function gpsBridgeHasKeyword(text){ text=String(text||"").toLowerCase(); return GPS_BRIDGE_CONFIG.vpnKeywords.some(k=>text.includes(k)); }
-    function gpsBridgeAnalyzeNetwork(data){ data=data||{}; const country=data.country_code||data.countryCode||data.country||""; if(country&&GPS_BRIDGE_CONFIG.expectedCountryCode&&String(country).toUpperCase()!==GPS_BRIDGE_CONFIG.expectedCountryCode) return {ok:false,reason:"Jaringan terdeteksi bukan dari Indonesia ("+country+"). Matikan VPN/proxy lalu coba lagi.",country:country}; const sec=data.security||data.privacy||{}; for(const key of ["vpn","proxy","tor","relay","hosting","anonymous","anonymizer"]){ if(sec&&(sec[key]===true||String(sec[key]).toLowerCase()==="true")) return {ok:false,reason:"Jaringan VPN/proxy/anonymizer terdeteksi ("+key+"). Matikan VPN lalu coba lagi.",security:sec}; } const c=data.connection||{}; const network=[data.org,data.asn,data.isp,c.org,c.isp,c.asn,c.domain].filter(Boolean).join(" "); if(gpsBridgeHasKeyword(network)) return {ok:false,reason:"Jaringan terindikasi memakai VPN/proxy/hosting: "+network.substring(0,90),network:network}; return {ok:true,country:country||"-",network:network||"-"}; }
-    async function gpsBridgeCheckNetwork(){ const providers=["https://ipwho.is/?security=1","https://ipapi.co/json/"]; let lastErr=null; for(const url of providers){ try{ return gpsBridgeAnalyzeNetwork(await gpsBridgeFetchJson(url,7500)); }catch(e){ lastErr=e; } } if(GPS_BRIDGE_CONFIG.blockIfIpCheckFails) return {ok:false,reason:"Pemeriksaan jaringan gagal. VPN/proxy tidak dapat diverifikasi."}; return {ok:true,warning:"Pemeriksaan VPN/proxy gagal, tetapi tidak diblokir.",error:lastErr?String(lastErr.message||lastErr):""}; }
-    window.addEventListener("message",async function(event){ const data=event.data||{}; if(!data||data.type!=="AHIS_REQUEST_GPS_FROM_GITHUB") return; const requestId=data.requestId||String(Date.now()); const targetWindow=event.source||(frame?frame.contentWindow:null); const cfg=Object.assign({},GPS_BRIDGE_CONFIG,data.config||{}); try{ gpsBridgeProgress(targetWindow,requestId,"Memeriksa jaringan VPN/proxy..."); const network=await gpsBridgeCheckNetwork(); if(cfg.blockVpnProxy!==false&&!network.ok){ gpsBridgePost(targetWindow,requestId,{status:"blocked",ok:false,reason:network.reason||"Jaringan VPN/proxy terdeteksi.",network:network,bridgeSource:GPS_BRIDGE_CONFIG.source}); return; } const samples=await gpsBridgeTakeSamples(targetWindow,requestId,cfg); const analysis=gpsBridgeAnalyzeSamples(samples,cfg); if(!analysis.ok){ gpsBridgePost(targetWindow,requestId,{status:"blocked",ok:false,reason:analysis.reason||"Sinyal GPS tidak normal.",samples:samples,analysis:analysis,network:network,bridgeSource:GPS_BRIDGE_CONFIG.source}); return; } gpsBridgePost(targetWindow,requestId,{status:"success",ok:true,samples:samples,analysis:analysis,network:network,bridgeSource:GPS_BRIDGE_CONFIG.source,bridgeTimestamp:new Date().toISOString()}); }catch(err){ gpsBridgePost(targetWindow,requestId,{status:"error",ok:false,reason:err&&err.message?err.message:String(err),bridgeSource:GPS_BRIDGE_CONFIG.source,bridgeTimestamp:new Date().toISOString()}); } });
-
-
-    setInterval(function () {
-      if (!navigator.onLine) {
-        if (!offlineScreen || !offlineScreen.classList.contains("show")) offlineShowPage();
-      } else if (offlineScreen && offlineScreen.classList.contains("show")) {
-        offlineHidePageAndReload();
-      }
-    }, 2500);
-
-    window.addEventListener("online", updateOnlineStatus);
-    window.addEventListener("offline", updateOnlineStatus);
-    window.addEventListener("resize", applyOrientationPolicy);
-    window.addEventListener("orientationchange", function () {
-      setTimeout(applyOrientationPolicy, 250);
-    });
-
-    updateOnlineStatus();
-    if (navigator.onLine) offlineLoadFrameIfOnline();
-    applyOrientationPolicy();
-
-    frame.addEventListener("load", function () {
-      setTimeout(hideSplash, 500);
-      // Izin lokasi tidak diminta setiap aplikasi dibuka.
-      // Izin akan muncul hanya saat user menekan Ambil Lokasi di menu Absensi.
-      setTimeout(function () {}, 900);
-    });
-
-    splashTimer = setTimeout(hideSplash, 9000);
-
-    window.addEventListener("beforeinstallprompt", function (event) {
-      event.preventDefault();
-      deferredPrompt = event;
-
-      const dismissedAt = Number(localStorage.getItem("pwa_install_dismissed_at") || 0);
-      const oneDay = 24 * 60 * 60 * 1000;
-
-      if (Date.now() - dismissedAt > oneDay) {
-        installBox.classList.add("show");
-      }
-    });
-
-    btnInstall.addEventListener("click", async function () {
-      if (!deferredPrompt) return;
-      installBox.classList.remove("show");
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      applyOrientationPolicy();
-    });
-
-    btnCloseInstall.addEventListener("click", function () {
-      localStorage.setItem("pwa_install_dismissed_at", String(Date.now()));
-      installBox.classList.remove("show");
-    });
-
-    btnRequestPermissions.addEventListener("click", requestAllPermissions);
-
-    btnClosePermission.addEventListener("click", function () {
-      localStorage.setItem("pwa_permission_dismissed_at", String(Date.now()));
-      permissionBox.classList.remove("show");
-    });
-
-    window.addEventListener("appinstalled", function () {
-      deferredPrompt = null;
-      installBox.classList.remove("show");
-      applyOrientationPolicy();
-    });
-
-    /*******************************************************
-     * PWA UPDATE HANDLER
-     * - Saat sw.js dinaikkan, user yang sedang membuka aplikasi
-     *   maupun yang baru membuka akan mendapat popup update.
-     * - Saat diklik, tampil progress bar selama 5 detik.
-     * - Setelah selesai, Service Worker baru diaktifkan dan aplikasi dimuat ulang.
-     *******************************************************/
-    const pwaUpdateModal = document.getElementById("pwaUpdateModal");
-    const btnPwaUpdateNow = document.getElementById("btnPwaUpdateNow");
-    const btnPwaUpdateLater = document.getElementById("btnPwaUpdateLater");
-    const pwaProgressWrap = document.getElementById("pwaProgressWrap");
-    const pwaProgressBar = document.getElementById("pwaProgressBar");
-    const pwaProgressPercent = document.getElementById("pwaProgressPercent");
-    const pwaProgressText = document.getElementById("pwaProgressText");
-    const pwaUpdateStatus = document.getElementById("pwaUpdateStatus");
-    const pwaUpdateActions = document.getElementById("pwaUpdateActions");
-
-    let pwaUpdateRunning = false;
-    let pwaReloadAfterAnimation = false;
-
-    function showPwaUpdatePopup(worker) {
-      if (pwaUpdateRunning) return;
-
-      if (worker) {
-        newWorkerWaiting = worker;
-      }
-
-      if (pwaUpdateModal) {
-        pwaUpdateModal.classList.add("show");
-        pwaUpdateModal.setAttribute("aria-hidden", "false");
-      }
-
-      if (updateAlert) {
-        updateAlert.classList.remove("show");
-      }
-    }
-
-    function hidePwaUpdatePopup() {
-      if (!pwaUpdateModal) return;
-      pwaUpdateModal.classList.remove("show");
-      pwaUpdateModal.setAttribute("aria-hidden", "true");
-    }
-
-    function startPwaUpdateAnimation() {
-      if (pwaUpdateRunning) return;
-      pwaUpdateRunning = true;
-
-      if (pwaProgressWrap) pwaProgressWrap.classList.add("show");
-      if (pwaUpdateActions) pwaUpdateActions.style.display = "none";
-      if (btnPwaUpdateNow) btnPwaUpdateNow.disabled = true;
-      if (btnPwaUpdateLater) btnPwaUpdateLater.disabled = true;
-
-      const steps = [
-        "Mengunduh file aplikasi terbaru...",
-        "Memperbarui cache aplikasi...",
-        "Menyiapkan tampilan terbaru...",
-        "Membersihkan versi lama...",
-        "Memuat ulang aplikasi..."
-      ];
-
-      let progress = 0;
-      let lastStep = -1;
-      const duration = 5000;
-      const intervalMs = 100;
-      const startedAt = Date.now();
-
-      if (pwaProgressBar) pwaProgressBar.style.width = "0%";
-      if (pwaProgressPercent) pwaProgressPercent.textContent = "0%";
-      if (pwaProgressText) pwaProgressText.textContent = "Memulai update...";
-      if (pwaUpdateStatus) pwaUpdateStatus.textContent = "Jangan tutup aplikasi sampai proses selesai.";
-
-      const timer = setInterval(function () {
-        const elapsed = Date.now() - startedAt;
-        progress = Math.min(100, Math.round((elapsed / duration) * 100));
-
-        if (pwaProgressBar) pwaProgressBar.style.width = progress + "%";
-        if (pwaProgressPercent) pwaProgressPercent.textContent = progress + "%";
-
-        const stepIndex = Math.min(steps.length - 1, Math.floor(progress / 20));
-        if (stepIndex !== lastStep) {
-          lastStep = stepIndex;
-          if (pwaProgressText) pwaProgressText.textContent = steps[stepIndex];
-        }
-
-        if (progress >= 100) {
-          clearInterval(timer);
-
-          if (pwaUpdateStatus) {
-            pwaUpdateStatus.textContent = "Update selesai. Aplikasi sedang dimuat ulang...";
-          }
-
-          setTimeout(function () {
-            pwaReloadAfterAnimation = true;
-
-            if (newWorkerWaiting) {
-              newWorkerWaiting.postMessage({ type: "SKIP_WAITING" });
-
-              // Fallback jika controllerchange terlambat/tidak terpanggil.
-              setTimeout(function () {
-                location.reload();
-              }, 700);
-            } else {
-              location.reload();
-            }
-          }, 250);
-        }
-      }, intervalMs);
-    }
-
-    if (btnPwaUpdateNow) {
-      btnPwaUpdateNow.addEventListener("click", startPwaUpdateAnimation);
-    }
-
-    if (btnPwaUpdateLater) {
-      btnPwaUpdateLater.addEventListener("click", function () {
-        hidePwaUpdatePopup();
-      });
-    }
-
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", async function () {
-        try {
-          const reg = await navigator.serviceWorker.register("./sw.js?v=" + APP_VERSION);
-
-          if (reg.waiting && navigator.serviceWorker.controller) {
-            showPwaUpdatePopup(reg.waiting);
-          }
-
-          reg.addEventListener("updatefound", function () {
-            const newWorker = reg.installing;
-            if (!newWorker) return;
-
-            newWorker.addEventListener("statechange", function () {
-              if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                showPwaUpdatePopup(newWorker);
-              }
+      window.addEventListener("online", updateOnlineStatus);
+      window.addEventListener("offline", updateOnlineStatus);
+      updateOnlineStatus();
+
+      loadApp();
+
+      // Service Worker Registration
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", async () => {
+          try {
+            const reg = await navigator.serviceWorker.register("service-worker.js");
+
+            reg.addEventListener("updatefound", () => {
+              const newWorker = reg.installing;
+              if (!newWorker) return;
+
+              newWorker.addEventListener("statechange", () => {
+                if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                  updateBanner.classList.add("show");
+                }
+              });
             });
-          });
-
-          // Cek update berkala untuk user yang sedang membuka aplikasi.
-          setInterval(function () {
-            if (reg && reg.update) reg.update();
-          }, 60000);
-
-          document.addEventListener("visibilitychange", function () {
-            if (document.visibilityState === "visible" && reg && reg.update) {
-              reg.update();
-            }
-          });
-
-          if (navigator.serviceWorker.controller) {
-            setTimeout(function () {
-              if (reg && reg.update) reg.update();
-            }, 3000);
+          } catch (err) {
+            console.warn("Service worker gagal didaftarkan:", err);
           }
-        } catch (err) {
-          console.warn("Service Worker gagal didaftarkan:", err);
+        });
+
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          window.location.reload();
+        });
+      }
+
+      reloadUpdate.addEventListener("click", async () => {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const reg of registrations) {
+          if (reg.waiting) {
+            reg.waiting.postMessage({ type: "SKIP_WAITING" });
+            return;
+          }
         }
+        window.location.reload();
       });
 
-      navigator.serviceWorker.addEventListener("controllerchange", function () {
-        if (pwaReloadAfterAnimation) {
-          location.reload();
-        }
-      });
-    }
-
-    if (btnApplyUpdate) {
-      btnApplyUpdate.addEventListener("click", function () {
-        showPwaUpdatePopup(newWorkerWaiting);
-      });
-    }
-
-
-document.addEventListener("gesturestart", function (event) {
-      event.preventDefault();
-    });
+      // Mencegah zoom di iOS/mobile
+      document.addEventListener("gesturestart", (e) => e.preventDefault());
+      document.addEventListener("dblclick", (e) => e.preventDefault(), { passive: false });
+    })();
   </script>
-  <!-- POPUP UPDATE PWA -->
-  <div class="pwa-update-modal" id="pwaUpdateModal" aria-hidden="true">
-    <div class="pwa-update-card">
-      <div class="pwa-update-head">
-        <div class="pwa-update-icon">
-          <i class="fas fa-cloud-arrow-down"></i>
-        </div>
-        <h2 class="pwa-update-title">Update Aplikasi Tersedia</h2>
-        <p class="pwa-update-subtitle">
-          Versi terbaru SISFO AHIS sudah siap. Klik update untuk memperbarui aplikasi.
-        </p>
-      </div>
-
-      <div class="pwa-update-body">
-        <div class="pwa-progress-wrap" id="pwaProgressWrap">
-          <div class="pwa-progress-top">
-            <span id="pwaProgressText">Menyiapkan update...</span>
-            <span id="pwaProgressPercent">0%</span>
-          </div>
-          <div class="pwa-progress-track">
-            <div class="pwa-progress-bar" id="pwaProgressBar"></div>
-          </div>
-          <div class="pwa-update-status" id="pwaUpdateStatus">
-            Mohon tunggu, aplikasi sedang diperbarui.
-          </div>
-        </div>
-
-        <div class="pwa-update-actions" id="pwaUpdateActions">
-          <button type="button" class="pwa-update-secondary" id="btnPwaUpdateLater">
-            Nanti
-          </button>
-          <button type="button" class="pwa-update-primary" id="btnPwaUpdateNow">
-            <i class="fas fa-rotate me-1"></i> Update Sekarang
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </body>
 </html>
