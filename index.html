@@ -72,6 +72,8 @@
       box-shadow: 0 16px 44px rgba(0,0,0,.26);
       font-size: 13px;
       line-height: 1.35;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
 
     .status-banner.show {
@@ -88,6 +90,16 @@
       cursor: pointer;
       white-space: nowrap;
     }
+
+    /* Diletakkan sedikit lebih tinggi agar tidak bertumpuk dengan banner offline/update. */
+    #hapticBanner {
+      bottom: calc(78px + var(--safe-bottom));
+      background: rgba(127, 29, 29, .96);
+    }
+
+    #hapticBanner button {
+      color: #991b1b;
+    }
   </style>
 </head>
 
@@ -99,32 +111,59 @@
     referrerpolicy="no-referrer-when-downgrade">
   </iframe>
 
-  <div class="status-banner" id="offlineBanner">
+  <div class="status-banner" id="offlineBanner" aria-live="polite">
     <span>Perangkat sedang offline. Beberapa fitur mungkin belum dapat dipakai.</span>
     <button type="button" onclick="location.reload()">Muat ulang</button>
   </div>
 
-  <div class="status-banner" id="updateBanner">
+  <div class="status-banner" id="updateBanner" aria-live="polite">
     <span>Update aplikasi tersedia. Muat ulang untuk memakai versi terbaru.</span>
     <button type="button" id="reloadUpdate">Update</button>
+  </div>
+
+  <div class="status-banner" id="hapticBanner" aria-live="polite">
+    <span>Aktifkan getaran perangkat agar penanda arah kiblat dapat bekerja.</span>
+    <button type="button" id="enableHaptic">Aktifkan</button>
   </div>
 
   <script src="config.js"></script>
   <script>
     (function () {
+      "use strict";
+
+      const WRAPPER_VERSION = "2026.07.19.04-session-haptic-bridge";
+      const SESSION_STORAGE_KEY = "ahis_wrapper_session_v1";
+
       const config = window.AHIS_CONFIG || {};
-      const appUrl = config.APP_URL || "";
+      const appUrl = String(config.APP_URL || "").trim();
+      const appName = String(config.APP_NAME || "SISFO AHIS").trim() || "SISFO AHIS";
 
       const frame = document.getElementById("appFrame");
       const offlineBanner = document.getElementById("offlineBanner");
       const updateBanner = document.getElementById("updateBanner");
       const reloadUpdate = document.getElementById("reloadUpdate");
+      const hapticBanner = document.getElementById("hapticBanner");
+      const enableHaptic = document.getElementById("enableHaptic");
 
-      document.title = config.APP_NAME || "SISFO AHIS";
+      let hapticActivated = false;
+
+      document.title = appName;
+      frame.title = appName;
+
+      const appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if (appleTitle) appleTitle.setAttribute("content", appName);
 
       function loadApp() {
+        if (!appUrl) {
+          console.error("APP_URL belum tersedia pada config.js.");
+          return;
+        }
+
         const separator = appUrl.includes("?") ? "&" : "?";
-        frame.src = appUrl + separator + "wrapper=github&t=" + Date.now();
+        frame.src = appUrl + separator +
+          "wrapper=github" +
+          "&wrapperVersion=" + encodeURIComponent(WRAPPER_VERSION) +
+          "&t=" + Date.now();
       }
 
       function updateOnlineStatus() {
@@ -135,13 +174,224 @@
       window.addEventListener("offline", updateOnlineStatus);
       updateOnlineStatus();
 
+      /**************************************************************
+       * SESSION BRIDGE PERMANEN
+       *
+       * Apps Script berjalan di dalam iframe lintas domain. Pada
+       * sebagian Android WebView, localStorage iframe dapat hilang atau
+       * tidak terbaca setelah aplikasi dihentikan. Karena itu sesi juga
+       * disimpan pada halaman GitHub yang menjadi top-level PWA.
+       **************************************************************/
+      function isValidSession(sessionData) {
+        return Boolean(
+          sessionData &&
+          sessionData.user &&
+          String(sessionData.user.user || "").trim()
+        );
+      }
+
+      function readSession() {
+        try {
+          const raw = localStorage.getItem(SESSION_STORAGE_KEY);
+          if (!raw) return null;
+
+          const data = JSON.parse(raw);
+          if (!isValidSession(data)) {
+            localStorage.removeItem(SESSION_STORAGE_KEY);
+            return null;
+          }
+
+          return data;
+        } catch (error) {
+          console.warn("Sesi wrapper gagal dibaca:", error);
+          return null;
+        }
+      }
+
+      function saveSession(sessionData) {
+        if (!isValidSession(sessionData)) return false;
+
+        try {
+          const normalized = Object.assign({}, sessionData, {
+            bridgeVersion: Number(sessionData.bridgeVersion || 1),
+            wrapperSavedAt: Date.now(),
+            wrapperVersion: WRAPPER_VERSION
+          });
+
+          localStorage.setItem(
+            SESSION_STORAGE_KEY,
+            JSON.stringify(normalized)
+          );
+
+          return true;
+        } catch (error) {
+          console.warn("Sesi wrapper gagal disimpan:", error);
+          return false;
+        }
+      }
+
+      function clearSession() {
+        try {
+          localStorage.removeItem(SESSION_STORAGE_KEY);
+          return true;
+        } catch (error) {
+          console.warn("Sesi wrapper gagal dihapus:", error);
+          return false;
+        }
+      }
+
+      function replySession(targetWindow, requestId, sessionData) {
+        if (!targetWindow) return;
+
+        try {
+          targetWindow.postMessage({
+            type: "AHIS_SESSION_RESPONSE",
+            requestId: requestId || "",
+            sessionData: sessionData || null,
+            wrapperVersion: WRAPPER_VERSION
+          }, "*");
+        } catch (error) {
+          console.warn("Jawaban session bridge gagal dikirim:", error);
+        }
+      }
+
+      /**************************************************************
+       * VIBRATION / HAPTIC BRIDGE UNTUK KOMPAS KIBLAT
+       **************************************************************/
+      function normalizeVibratePattern(pattern) {
+        const source = Array.isArray(pattern) ? pattern : [pattern];
+
+        return source.slice(0, 20).map((value) => {
+          const number = Math.round(Number(value) || 0);
+          return Math.max(0, Math.min(1000, number));
+        });
+      }
+
+      function sendVibrateResponse(targetWindow, payload) {
+        if (!targetWindow) return;
+
+        try {
+          targetWindow.postMessage(Object.assign({
+            type: "AHIS_VIBRATE_RESPONSE",
+            wrapperVersion: WRAPPER_VERSION
+          }, payload || {}), "*");
+        } catch (error) {
+          console.warn("Jawaban vibration bridge gagal dikirim:", error);
+        }
+      }
+
+      function runVibration(pattern) {
+        if (typeof navigator.vibrate !== "function") return false;
+
+        try {
+          return navigator.vibrate(normalizeVibratePattern(pattern)) !== false;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function sendHapticReady() {
+        if (!frame || !frame.contentWindow) return;
+
+        try {
+          frame.contentWindow.postMessage({
+            type: "AHIS_VIBRATE_READY",
+            wrapperVersion: WRAPPER_VERSION
+          }, "*");
+        } catch (error) {
+          console.warn("Status getaran gagal dikirim:", error);
+        }
+      }
+
+      enableHaptic.addEventListener("click", function () {
+        hapticActivated = true;
+
+        const ok = runVibration([45, 35, 45]);
+        hapticBanner.classList.remove("show");
+
+        if (ok) {
+          sendHapticReady();
+        } else {
+          hapticActivated = false;
+          hapticBanner.querySelector("span").textContent =
+            "Getaran tidak didukung atau dinonaktifkan pada perangkat ini.";
+          hapticBanner.classList.add("show");
+        }
+      });
+
+      /**************************************************************
+       * SATU MESSAGE HANDLER UNTUK SESSION DAN GETARAN
+       **************************************************************/
+      window.addEventListener("message", function (event) {
+        const data = event.data || {};
+
+        /* Hanya menerima pesan dari iframe Apps Script aktif. */
+        if (!frame || event.source !== frame.contentWindow) return;
+
+        if (data.type === "AHIS_SESSION_SAVE") {
+          saveSession(data.sessionData);
+          return;
+        }
+
+        if (data.type === "AHIS_SESSION_CLEAR") {
+          clearSession();
+          return;
+        }
+
+        if (data.type === "AHIS_SESSION_GET") {
+          replySession(event.source, data.requestId, readSession());
+          return;
+        }
+
+        if (data.type === "AHIS_VIBRATE_REQUEST") {
+          const requestId = data.requestId || "";
+          const reason = String(data.reason || "general");
+
+          if (typeof navigator.vibrate !== "function") {
+            sendVibrateResponse(event.source, {
+              requestId: requestId,
+              reason: reason,
+              ok: false,
+              supported: false,
+              needsActivation: false
+            });
+            return;
+          }
+
+          if (!hapticActivated) {
+            hapticBanner.classList.add("show");
+            sendVibrateResponse(event.source, {
+              requestId: requestId,
+              reason: reason,
+              ok: false,
+              supported: true,
+              needsActivation: true
+            });
+            return;
+          }
+
+          const ok = runVibration(data.pattern || [100, 70, 100]);
+
+          sendVibrateResponse(event.source, {
+            requestId: requestId,
+            reason: reason,
+            ok: ok,
+            supported: true,
+            needsActivation: false
+          });
+        }
+      }, false);
+
+      /* Memuat Apps Script setelah bridge sudah siap menerima pesan. */
       loadApp();
 
       // Service Worker Registration
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", async () => {
           try {
-            const reg = await navigator.serviceWorker.register("service-worker.js");
+            const reg = await navigator.serviceWorker.register(
+              "service-worker.js?v=" + encodeURIComponent(WRAPPER_VERSION)
+            );
 
             reg.addEventListener("updatefound", () => {
               const newWorker = reg.installing;
@@ -153,6 +403,11 @@
                 }
               });
             });
+
+            /* Memeriksa update ketika PWA dibuka kembali. */
+            if (reg.update) {
+              setTimeout(() => reg.update(), 2500);
+            }
           } catch (err) {
             console.warn("Service worker gagal didaftarkan:", err);
           }
@@ -164,19 +419,26 @@
       }
 
       reloadUpdate.addEventListener("click", async () => {
+        if (!("serviceWorker" in navigator)) {
+          window.location.reload();
+          return;
+        }
+
         const registrations = await navigator.serviceWorker.getRegistrations();
+
         for (const reg of registrations) {
           if (reg.waiting) {
             reg.waiting.postMessage({ type: "SKIP_WAITING" });
             return;
           }
         }
+
         window.location.reload();
       });
 
       // Mencegah zoom di iOS/mobile
-      document.addEventListener("gesturestart", (e) => e.preventDefault());
-      document.addEventListener("dblclick", (e) => e.preventDefault(), { passive: false });
+      document.addEventListener("gesturestart", (event) => event.preventDefault());
+      document.addEventListener("dblclick", (event) => event.preventDefault(), { passive: false });
     })();
   </script>
 </body>
