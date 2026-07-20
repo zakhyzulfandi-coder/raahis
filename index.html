@@ -107,8 +107,10 @@
   <iframe
     id="appFrame"
     title="SISFO AHIS"
+    src="about:blank"
     allow="geolocation; camera; microphone; gyroscope; accelerometer; magnetometer; clipboard-read; clipboard-write; fullscreen; web-share"
-    referrerpolicy="no-referrer-when-downgrade">
+    allowfullscreen
+    referrerpolicy="strict-origin-when-cross-origin">
   </iframe>
 
   <div class="status-banner" id="offlineBanner" aria-live="polite">
@@ -131,7 +133,7 @@
     (function () {
       "use strict";
 
-      const WRAPPER_VERSION = "2026.07.20.06-presence-offline-beacon";
+      const WRAPPER_VERSION = "2026.07.20.07-stable-app-url";
       const SESSION_STORAGE_KEY = "ahis_wrapper_session_v1";
 
       const config = window.AHIS_CONFIG || {};
@@ -159,15 +161,33 @@
           return;
         }
 
-        const separator = appUrl.includes("?") ? "&" : "?";
-        frame.src = appUrl + separator +
-          "wrapper=github" +
-          "&wrapperVersion=" + encodeURIComponent(WRAPPER_VERSION) +
-          "&t=" + Date.now();
+        /*
+         * Muat URL Apps Script secara stabil seperti wrapper server 1.
+         * Jangan menambahkan t=Date.now(), wrapperVersion, atau parameter
+         * cache-busting lain karena dapat membuat iframe dianggap sebagai
+         * dokumen baru setiap aplikasi dibuka.
+         */
+        const currentSrc = String(frame.getAttribute("src") || "").trim();
+
+        if (currentSrc && currentSrc !== "about:blank") {
+          return;
+        }
+
+        frame.setAttribute("src", appUrl);
       }
 
       function updateOnlineStatus() {
         offlineBanner.classList.toggle("show", !navigator.onLine);
+      }
+
+      function reloadAppFrame() {
+        if (!appUrl || !frame) return;
+
+        frame.setAttribute("src", "about:blank");
+
+        setTimeout(function () {
+          frame.setAttribute("src", appUrl);
+        }, 80);
       }
 
       window.addEventListener("online", updateOnlineStatus);
