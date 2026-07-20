@@ -131,7 +131,7 @@
     (function () {
       "use strict";
 
-      const WRAPPER_VERSION = "2026.07.19.05-direct-vibration-fallback";
+      const WRAPPER_VERSION = "2026.07.20.06-presence-offline-beacon";
       const SESSION_STORAGE_KEY = "ahis_wrapper_session_v1";
 
       const config = window.AHIS_CONFIG || {};
@@ -254,6 +254,140 @@
           console.warn("Jawaban session bridge gagal dikirim:", error);
         }
       }
+
+      /**************************************************************
+       * BRIDGE TERAKHIR OFFLINE
+       *
+       * visibilitychange/pagehide di dalam iframe Apps Script tidak selalu
+       * sempat menyelesaikan google.script.run ketika PWA/WebView ditutup.
+       * Karena wrapper ini adalah halaman utama, wrapper mengirim timestamp
+       * offline langsung ke endpoint Apps Script menggunakan sendBeacon.
+       **************************************************************/
+      let offlinePresenceSent = false;
+
+      function getPresenceIdentity() {
+        const session = readSession();
+        const user = session && session.user ? session.user : {};
+        const username = String(
+          user.user ||
+          user.username ||
+          user.idPegawai ||
+          ""
+        ).trim();
+
+        if (!username) return null;
+
+        return {
+          username: username,
+          user: username,
+          sessionUser: {
+            user: username,
+            username: String(user.username || username),
+            idPegawai: String(user.idPegawai || username),
+            nama: String(user.nama || ""),
+            role: String(user.role || "")
+          }
+        };
+      }
+
+      function getPresenceEndpoint() {
+        if (!appUrl) return "";
+        const separator = appUrl.includes("?") ? "&" : "?";
+        return appUrl + separator + "api=presence-offline";
+      }
+
+      function sendOfflinePresence(source) {
+        if (offlinePresenceSent) return false;
+
+        const identity = getPresenceIdentity();
+        const endpoint = getPresenceEndpoint();
+
+        if (!identity || !endpoint) return false;
+
+        offlinePresenceSent = true;
+
+        const payload = Object.assign({}, identity, {
+          source: String(source || "GITHUB_WRAPPER_OFFLINE"),
+          clientTime: new Date().toISOString(),
+          wrapperVersion: WRAPPER_VERSION,
+          userAgent: navigator.userAgent || ""
+        });
+
+        const formBody = new URLSearchParams();
+        formBody.set("username", payload.username || "");
+        formBody.set("user", payload.user || payload.username || "");
+        formBody.set("source", payload.source || "GITHUB_WRAPPER_OFFLINE");
+        formBody.set("clientTime", payload.clientTime || "");
+        formBody.set("wrapperVersion", payload.wrapperVersion || "");
+        formBody.set("userAgent", payload.userAgent || "");
+        formBody.set("nama", payload.sessionUser && payload.sessionUser.nama || "");
+        formBody.set("role", payload.sessionUser && payload.sessionUser.role || "");
+        formBody.set("idPegawai", payload.sessionUser && payload.sessionUser.idPegawai || payload.username || "");
+
+        /* Beri tahu iframe juga sebagai jalur cadangan saat masih hidup. */
+        try {
+          if (frame && frame.contentWindow) {
+            frame.contentWindow.postMessage({
+              type: "AHIS_WRAPPER_OFFLINE",
+              payload: payload
+            }, "*");
+          }
+        } catch (error) {
+          console.warn("Pesan offline ke iframe gagal:", error);
+        }
+
+        let beaconSent = false;
+
+        try {
+          if (typeof navigator.sendBeacon === "function") {
+            /* URLSearchParams memakai content-type sederhana dan aman lintas origin. */
+            beaconSent = navigator.sendBeacon(endpoint, formBody);
+          }
+        } catch (error) {
+          console.warn("sendBeacon terakhir offline gagal:", error);
+        }
+
+        /* Fallback untuk WebView yang menolak sendBeacon. */
+        if (!beaconSent && typeof fetch === "function") {
+          try {
+            fetch(endpoint, {
+              method: "POST",
+              mode: "no-cors",
+              cache: "no-store",
+              keepalive: true,
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+              },
+              body: formBody.toString()
+            }).catch(function () {});
+          } catch (error) {
+            console.warn("Fetch keepalive terakhir offline gagal:", error);
+          }
+        }
+
+        return beaconSent;
+      }
+
+      document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "hidden") {
+          sendOfflinePresence("WRAPPER_BACKGROUND");
+        } else {
+          /* Siap mencatat lagi pada siklus background berikutnya. */
+          offlinePresenceSent = false;
+        }
+      });
+
+      window.addEventListener("pagehide", function () {
+        sendOfflinePresence("WRAPPER_PAGEHIDE");
+      });
+
+      window.addEventListener("beforeunload", function () {
+        sendOfflinePresence("WRAPPER_BEFOREUNLOAD");
+      });
+
+      window.addEventListener("pageshow", function () {
+        offlinePresenceSent = false;
+      });
 
       /**************************************************************
        * VIBRATION / HAPTIC BRIDGE UNTUK KOMPAS KIBLAT
